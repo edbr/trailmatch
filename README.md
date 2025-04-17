@@ -1,3 +1,29 @@
+# 🎒 TrailMatch
+
+TrailMatch helps you find nearby hiking or biking trails that match your weekend vibe — whether you're looking for scenic, low-traffic, dog-friendly, or quick trails near your city.
+
+## 🚀 Stack
+
+- [Next.js](https://nextjs.org/)
+- [ShadCN UI](https://ui.shadcn.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Vercel](https://vercel.com)
+- [GitHub](https://github.com/edbr/trailmatch)
+
+## 💡 Features
+
+- 📍 Location + vibe-based trail suggestions
+- ⏱️ Filters for time, distance, and mood
+- 📸 Sharable trail matches
+- 🌱 Lightweight, fast, and mobile-friendly
+
+## 🛠️ Setup
+
+```bash
+pnpm install
+pnpm dev
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
