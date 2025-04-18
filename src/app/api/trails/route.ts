@@ -58,6 +58,11 @@ export async function GET(req: Request) {
     const latNum = place.geometry.location.lat
     const lonNum = place.geometry.location.lng
 
+    // Mock difficulty and elevation values
+    const difficulties = ["Easy", "Moderate", "Hard"]
+    const randomDifficulty = difficulties[Math.floor(Math.random() * difficulties.length)]
+    const elevation = Math.floor(300 + Math.random() * 1200) // 300–1500 ft
+
     return {
       id: place.place_id,
       name: place.name,
@@ -66,7 +71,8 @@ export async function GET(req: Request) {
       lon: lonNum,
       rating: place.rating,
       distance: haversineDistance(Number(lat), Number(lon), latNum, lonNum),
-      mapUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`,
+      mapUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`, elevation,
+      difficulty: randomDifficulty,
     }
   })
   .sort((a, b) => a.distance - b.distance)

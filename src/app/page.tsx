@@ -10,10 +10,19 @@ import { AnimatePresence, motion } from "framer-motion"
 
 export const dynamic = "force-dynamic"
 
+/// <reference types="@types/google.maps" />
+
 declare global {
   interface Window {
-    google: any
+    google: typeof google
   }
+}
+
+
+interface AddressComponent {
+  types: string[]
+  long_name: string
+  short_name: string
 }
 
 export default function Home() {
@@ -22,31 +31,58 @@ export default function Home() {
   const [lon, setLon] = useState("")
   const [locationInput, setLocationInput] = useState("")
   const [error, setError] = useState("")
-  const [bgImage, setBgImage] = useState<string | null>(null)
+  const [bgImage, setBgImage] = useState<string>("/fallback.jpg")
   const inputRef = useRef<HTMLInputElement>(null)
   const [scriptLoaded, setScriptLoaded] = useState(false)
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const lat = pos.coords.latitude
-          const lon = pos.coords.longitude
-          setLat(lat.toString())
-          setLon(lon.toString())
-          localStorage.setItem("userLat", lat.toString())
-          localStorage.setItem("userLon", lon.toString())
-          const city = await reverseGeocode(lat, lon)
-          if (city) {
-            setLocationInput(city)
-          }
-        },
-        () => console.log("Geolocation denied or failed.")
-      )
+    const reverseGeocode = async (lat: number, lon: number): Promise<string | null> => {
+      try {
+        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
+        const res = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}`
+        )
+        const data = await res.json()
+        const result = data.results?.[0]
+        if (!result) return null
+
+        const components = result.address_components as AddressComponent[]
+        const city = components.find((c: AddressComponent) =>
+          c.types.includes("locality") || c.types.includes("sublocality")
+        )?.long_name
+
+        return city || result.formatted_address
+      } catch (err) {
+        console.error("Reverse geocoding failed", err)
+        return null
+      }
     }
+
+    navigator.geolocation?.getCurrentPosition(
+      async (pos) => {
+        const userLat = pos.coords.latitude
+        const userLon = pos.coords.longitude
+        setLat(userLat.toString())
+        setLon(userLon.toString())
+        localStorage.setItem("userLat", userLat.toString())
+        localStorage.setItem("userLon", userLon.toString())
+        const city = await reverseGeocode(userLat, userLon)
+        if (city) setLocationInput(city)
+      },
+      () => console.log("Geolocation denied or failed.")
+    )
   }, [])
 
   useEffect(() => {
+    const existingScript = document.querySelector<HTMLScriptElement>(
+      'script[src*="maps.googleapis.com/maps/api/js"]'
+    )
+
+    if (existingScript) {
+      setScriptLoaded(true)
+      return
+    }
+
     const script = document.createElement("script")
     script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}&libraries=places`
     script.async = true
@@ -57,108 +93,77 @@ export default function Home() {
   useEffect(() => {
     if (!scriptLoaded || !inputRef.current) return
 
-    const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
+    const googleMaps = window.google
+    if (!googleMaps?.maps?.places?.Autocomplete) return
+
+    const autocomplete = new googleMaps.maps.places.Autocomplete(inputRef.current, {
       types: ["(cities)"]
     })
 
     autocomplete.addListener("place_changed", () => {
-      const place = autocomplete.getPlace()
-      if (!place.geometry) return
+      const place = autocomplete.getPlace() as google.maps.places.PlaceResult
+      if (!place.geometry || !place.geometry.location) return
 
-      const lat = place.geometry.location.lat()
-      const lon = place.geometry.location.lng()
-      setLat(lat.toString())
-      setLon(lon.toString())
-      setLocationInput(place.formatted_address || place.name)
+      const placeLat = place.geometry.location.lat()
+      const placeLon = place.geometry.location.lng()
+      setLat(placeLat.toString())
+      setLon(placeLon.toString())
+      setLocationInput(place.formatted_address || place.name || "")
     })
   }, [scriptLoaded])
 
   useEffect(() => {
     const fetchImage = async () => {
-      // Always set fallback initially to prevent blank background
       setBgImage("/fallback.jpg")
-  
       try {
         const key = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY
         if (!key) throw new Error("Missing Unsplash access key")
-  
+
         const query = locationInput || "lake tahoe"
         const res = await fetch(
           `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&orientation=landscape&client_id=${key}`
         )
-  
+
         if (!res.ok) throw new Error("Unsplash API request failed")
-  
         const data = await res.json()
-        if (data?.urls?.full) {
-          setBgImage(data.urls.full)
-        }
+        if (data?.urls?.full) setBgImage(data.urls.full)
       } catch (err) {
-        console.error("🔻 Unsplash failed. Using fallback image:", err)
+        console.error("Unsplash failed. Using fallback image:", err)
         setBgImage("/fallback.jpg")
       }
     }
-  
+
     fetchImage()
   }, [locationInput])
-  
-  
-
-  const reverseGeocode = async (lat: number, lon: number): Promise<string | null> => {
-    try {
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
-      const res = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}`
-      )
-      const data = await res.json()
-      const result = data.results?.[0]
-      if (result) {
-        const components = result.address_components
-        const city = components.find((c: any) =>
-          c.types.includes("locality") || c.types.includes("sublocality")
-        )?.long_name
-        return city || result.formatted_address
-      }
-      return null
-    } catch (err) {
-      console.error("Reverse geocoding failed", err)
-      return null
-    }
-  }
 
   const geocodeFallback = async () => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
     const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-        locationInput
-      )}&key=${apiKey}`
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(locationInput)}&key=${apiKey}`
     )
     const data = await res.json()
     const result = data.results?.[0]
-    if (result) {
-      const loc = result.geometry.location
-      setLat(loc.lat.toString())
-      setLon(loc.lng.toString())
-      return loc
-    } else {
-      throw new Error("Location not found")
-    }
+    if (!result) throw new Error("Location not found")
+
+    const loc = result.geometry.location
+    setLat(loc.lat.toString())
+    setLon(loc.lng.toString())
+    return loc
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+
     try {
-      if (locationInput && locationInput.trim() !== "") {
-        const result = await geocodeFallback()
-        router.push(`/results?lat=${result.lat}&lon=${result.lng}`)
-        return
-      }
-      if (lat && lon) {
+      if (locationInput.trim()) {
+        const loc = await geocodeFallback()
+        router.push(`/results?lat=${loc.lat}&lon=${loc.lng}`)
+      } else if (lat && lon) {
         router.push(`/results?lat=${lat}&lon=${lon}`)
-        return
+      } else {
+        setError("Enter a location or allow geolocation.")
       }
-      setError("Enter a location or allow geolocation.")
     } catch {
       setError("We couldn't find that location.")
     }
@@ -179,6 +184,7 @@ export default function Home() {
           />
         )}
       </AnimatePresence>
+
       <div className="absolute inset-0 bg-black/30 z-0" />
 
       {locationInput && (
