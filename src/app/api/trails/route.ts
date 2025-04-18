@@ -35,16 +35,42 @@ export async function GET(req: Request) {
     }
     rating?: number
   }
+
+  function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const toRad = (x: number) => (x * Math.PI) / 180
   
-  const trails = (data.results as GooglePlace[]).map((place) => ({
-    id: place.place_id,
-    name: place.name,
-    location: place.vicinity || "Unknown location",
-    lat: place.geometry.location.lat,
-    lon: place.geometry.location.lng,
-    rating: place.rating,
-    mapUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`
-  }))
+    const R = 6371 // km
+    const dLat = toRad(lat2 - lat1)
+    const dLon = toRad(lon2 - lon1)
+  
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2)
+  
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c // distance in km
+  }
+  
+  
+  const trails = (data.results as GooglePlace[])
+  .map((place) => {
+    const latNum = place.geometry.location.lat
+    const lonNum = place.geometry.location.lng
+
+    return {
+      id: place.place_id,
+      name: place.name,
+      location: place.vicinity || "Unknown location",
+      lat: latNum,
+      lon: lonNum,
+      rating: place.rating,
+      distance: haversineDistance(Number(lat), Number(lon), latNum, lonNum),
+      mapUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`,
+    }
+  })
+  .sort((a, b) => a.distance - b.distance)
+
   
 
   return NextResponse.json(trails)
