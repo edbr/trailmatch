@@ -113,7 +113,7 @@ export default function ResultsClient() {
             </CardHeader>
             <CardContent className="space-y-2">
             <Image
-              src={`https://maps.googleapis.com/maps/api/staticmap?center=${trail.lat},${trail.lon}&zoom=14&size=600x300&maptype=terrain&markers=color:red%7C${trail.lat},${trail.lon}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
+              src={`https://maps.googleapis.com/maps/api/staticmap?center=${trail.lat},${trail.lon}&zoom=14&size=600x300&maptype=terrain&markers=color:red%7C${trail.lat},${trail.lon}&key=${process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY}`}
               alt={`Map preview for ${trail.name}`}
               width={600}
               height={300}
