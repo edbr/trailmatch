@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import Image from "next/image"
+
 
 type Trail = {
   id: string
@@ -110,11 +112,13 @@ export default function ResultsClient() {
 </div>
             </CardHeader>
             <CardContent className="space-y-2">
-              <img
-                src={`https://maps.googleapis.com/maps/api/staticmap?center=${trail.lat},${trail.lon}&zoom=14&size=600x300&maptype=terrain&markers=color:red%7C${trail.lat},${trail.lon}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
-                alt={`Map preview for ${trail.name}`}
-                className="rounded-xl w-full max-w-full object-cover border shadow-sm"
-              />
+            <Image
+              src={`https://maps.googleapis.com/maps/api/staticmap?center=${trail.lat},${trail.lon}&zoom=14&size=600x300&maptype=terrain&markers=color:red%7C${trail.lat},${trail.lon}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
+              alt={`Map preview for ${trail.name}`}
+              width={600}
+              height={300}
+              className="rounded-xl w-full object-cover border shadow-sm"
+            />
               <a
                 href={trail.mapUrl}
                 target="_blank"

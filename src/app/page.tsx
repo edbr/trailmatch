@@ -43,21 +43,22 @@ export default function Home() {
       )
       const data = await res.json()
       const result = data.results?.[0]
-
+  
       if (result) {
         const components = result.address_components
-        const city = components.find((c: any) =>
+        const city = components.find((c: { types: string[]; long_name: string }) =>
           c.types.includes("locality") || c.types.includes("sublocality")
         )?.long_name
         return city || result.formatted_address
       }
-
+  
       return null
     } catch (err) {
       console.error("Reverse geocoding failed", err)
       return null
     }
   }
+  
 
   const geocodeFallback = async () => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
