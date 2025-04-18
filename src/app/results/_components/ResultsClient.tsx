@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { motion } from "framer-motion"
 
 type Trail = {
   id: string
@@ -14,6 +15,7 @@ type Trail = {
   lon: number
   rating?: number
   mapUrl: string
+  tags?: string []
 }
 
 export default function ResultsClient() {
@@ -51,6 +53,28 @@ export default function ResultsClient() {
     return <main className="p-6 text-center">Loading trails...</main>
   }
 
+  const getTrailTags = (name: string): string[] => {
+    const tags: string[] = []
+  
+    const lower = name.toLowerCase()
+  
+    if (lower.includes("lake") || lower.includes("falls") || lower.includes("ridge")) {
+      tags.push("✨ Scenic")
+    }
+    if (lower.includes("loop") || lower.includes("trail")) {
+      tags.push("🥾 Good Walk")
+    }
+    if (lower.includes("dog") || lower.includes("pet")) {
+      tags.push("🐾 Dog Friendly")
+    }
+    if (lower.includes("easy") || lower.includes("family") || lower.includes("park")) {
+      tags.push("🧒 Kid Safe")
+    }
+  
+    return tags
+  }
+  
+
   return (
     <main className="p-6 max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -63,13 +87,27 @@ export default function ResultsClient() {
       {trails.length === 0 ? (
         <p className="text-muted-foreground">No trails found near this location.</p>
       ) : (
-        trails.map((trail) => (
-          <Card key={trail.id}>
+        trails.map((trail, i) => (
+          <motion.div
+          key={trail.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          whileHover={{ scale: 1.02, y: -2 }}
+          transition={{ duration: 0.4, delay: i * 0.05  }} // add `i` to your map loop if needed
+        >   
+          <Card className="transition-all" key={trail.id}>
             <CardHeader>
               <CardTitle>{trail.name}</CardTitle>
               <p className="text-sm text-muted-foreground">
                 {trail.location} · {trail.rating ? `⭐ ${trail.rating}` : ""}
               </p>
+              <div className="flex gap-2 flex-wrap text-xs font-medium text-muted-foreground">
+            {getTrailTags(trail.name).map((tag) => (
+            <span key={tag} className="bg-muted px-2 py-0.5 rounded-full">
+              {tag}
+            </span>
+          ))}
+</div>
             </CardHeader>
             <CardContent className="space-y-2">
               <img
@@ -87,6 +125,7 @@ export default function ResultsClient() {
               </a>
             </CardContent>
           </Card>
+          </motion.div>
         ))
       )}
     </main>
