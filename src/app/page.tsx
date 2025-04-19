@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -18,7 +18,6 @@ declare global {
   }
 }
 
-
 interface AddressComponent {
   types: string[]
   long_name: string
@@ -29,11 +28,39 @@ export default function Home() {
   const router = useRouter()
   const [lat, setLat] = useState("")
   const [lon, setLon] = useState("")
-  const [locationInput, setLocationInput] = useState("")
+  const [locationInput] = useState("")
   const [error, setError] = useState("")
   const [bgImage, setBgImage] = useState<string>("/fallback.jpg")
   const inputRef = useRef<HTMLInputElement>(null)
   const [scriptLoaded, setScriptLoaded] = useState(false)
+  const [typedLocation, setTypedLocation] = useState("")
+  const [, setConfirmedLocation] = useState("")
+  const [initialImageFetched, setInitialImageFetched] = useState(false)
+
+  const fetchUnsplashImage = useCallback(async (query: string) => {
+    try {
+      const key = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY
+      const url = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&orientation=landscape&client_id=${key}`
+
+      const res = await fetch(url)
+      if (!res.ok) {
+        throw new Error(`Unsplash fetch failed with status: ${res.status}`)
+      }
+
+      const data = await res.json()
+      const imageUrl = data?.urls?.full
+
+      if (imageUrl) {
+        await preloadImage(imageUrl)
+        setBgImage(imageUrl)
+        if (typeof window !== "undefined") {
+          localStorage.setItem("bgImage", imageUrl)
+        }
+      }
+    } catch (err) {
+      console.error("Unsplash fetch error:", err)
+    }
+  }, [])
 
   useEffect(() => {
     const reverseGeocode = async (lat: number, lon: number): Promise<string | null> => {
@@ -67,11 +94,14 @@ export default function Home() {
         localStorage.setItem("userLat", userLat.toString())
         localStorage.setItem("userLon", userLon.toString())
         const city = await reverseGeocode(userLat, userLon)
-        if (city) setLocationInput(city)
+        if (city && !initialImageFetched) {
+          fetchUnsplashImage(city)
+          setInitialImageFetched(true)
+        }
       },
       () => console.log("Geolocation denied or failed.")
     )
-  }, [])
+  }, [fetchUnsplashImage, initialImageFetched])
 
   useEffect(() => {
     const existingScript = document.querySelector<HTMLScriptElement>(
@@ -108,33 +138,21 @@ export default function Home() {
       const placeLon = place.geometry.location.lng()
       setLat(placeLat.toString())
       setLon(placeLon.toString())
-      setLocationInput(place.formatted_address || place.name || "")
+      const locationName = place.formatted_address || place.name || ""
+      setTypedLocation(locationName)
+      setConfirmedLocation(locationName)
+      fetchUnsplashImage(locationName)
     })
-  }, [scriptLoaded])
+  }, [scriptLoaded, fetchUnsplashImage])
 
-  useEffect(() => {
-    const fetchImage = async () => {
-      setBgImage("/fallback.jpg")
-      try {
-        const key = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY
-        if (!key) throw new Error("Missing Unsplash access key")
-
-        const query = locationInput || "lake tahoe"
-        const res = await fetch(
-          `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&orientation=landscape&client_id=${key}`
-        )
-
-        if (!res.ok) throw new Error("Unsplash API request failed")
-        const data = await res.json()
-        if (data?.urls?.full) setBgImage(data.urls.full)
-      } catch (err) {
-        console.error("Unsplash failed. Using fallback image:", err)
-        setBgImage("/fallback.jpg")
-      }
-    }
-
-    fetchImage()
-  }, [locationInput])
+  const preloadImage = (url: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => resolve(url)
+      img.onerror = reject
+      img.src = url
+    })
+  }
 
   const geocodeFallback = async () => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
@@ -178,7 +196,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
             className="absolute inset-0 bg-cover bg-center opacity-80"
             style={{ backgroundImage: `url(${bgImage})` }}
           />
@@ -187,9 +205,9 @@ export default function Home() {
 
       <div className="absolute inset-0 bg-black/30 z-0" />
 
-      {locationInput && (
+      {typedLocation && (
         <div className="absolute top-4 right-4 z-10 text-white text-sm bg-black/40 px-3 py-1 rounded-full">
-          {locationInput}
+          {typedLocation}
         </div>
       )}
 
@@ -214,8 +232,8 @@ export default function Home() {
                 id="location"
                 name="location"
                 placeholder="Enter city or point of interest"
-                value={locationInput}
-                onChange={(e) => setLocationInput(e.target.value)}
+                value={typedLocation}
+                onChange={(e) => setTypedLocation(e.target.value)}
                 ref={inputRef}
               />
 

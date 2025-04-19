@@ -39,7 +39,9 @@ export default function ResultsClient() {
     fetchTrails()
 
     const storedBg = localStorage.getItem("bgImage")
-    setBgImage(storedBg || "/fallback.jpg")
+    if (storedBg) {
+      setBgImage(storedBg)
+    }
   }, [lat, lon])
 
   if (!lat || !lon) {
