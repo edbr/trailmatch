@@ -120,7 +120,7 @@ export default function TrailCard({ trail }: { trail: Trail }) {
 
           <div className="flex justify-between items-center">
             <a
-              href={trail.mapUrl}
+              href={`https://www.google.com/maps/search/?api=1&query=${trail.lat},${trail.lon}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-medium underline"
