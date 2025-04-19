@@ -1,7 +1,11 @@
 {
-  "build": {
-    "env": {
-      "NODE_VERSION": "18"
+    "buildCommand": "pnpm install && pnpm build",
+    "outputDirectory": ".next",
+    "installCommand": "pnpm install --frozen-lockfile",
+    "build": {
+      "env": {
+        "NEXT_TELEMETRY_DISABLED": "1"
+      }
     }
   }
-}
+  
