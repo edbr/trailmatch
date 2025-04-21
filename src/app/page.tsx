@@ -28,7 +28,6 @@ export default function Home() {
   const router = useRouter()
   const [lat, setLat] = useState("")
   const [lon, setLon] = useState("")
-  const [locationInput] = useState("")
   const [error, setError] = useState("")
   const [bgImage, setBgImage] = useState<string>("/fallback.jpg")
   const inputRef = useRef<HTMLInputElement>(null)
@@ -138,7 +137,7 @@ export default function Home() {
       const placeLon = place.geometry.location.lng()
       setLat(placeLat.toString())
       setLon(placeLon.toString())
-      const locationName = place.formatted_address || place.name || ""
+      const locationName = (place.name || "trail").toLowerCase().replace(/\s+/g, "-")
       setTypedLocation(locationName)
       setConfirmedLocation(locationName)
       fetchUnsplashImage(locationName)
@@ -157,28 +156,28 @@ export default function Home() {
   const geocodeFallback = async () => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
     const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(locationInput)}&key=${apiKey}`
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(typedLocation)}&key=${apiKey}`
     )
     const data = await res.json()
     const result = data.results?.[0]
     if (!result) throw new Error("Location not found")
-
+  
     const loc = result.geometry.location
     setLat(loc.lat.toString())
     setLon(loc.lng.toString())
     return loc
-  }
+  }  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-
+  
     try {
-      if (locationInput.trim()) {
+      if (typedLocation.trim()) {
         const loc = await geocodeFallback()
-        router.push(`/results?lat=${loc.lat}&lon=${loc.lng}`)
+        router.push(`/results/${typedLocation}?lat=${loc.lat}&lon=${loc.lng}`)
       } else if (lat && lon) {
-        router.push(`/results?lat=${lat}&lon=${lon}`)
+        router.push(`/results/${typedLocation || "location"}?lat=${lat}&lon=${lon}`)
       } else {
         setError("Enter a location or allow geolocation.")
       }
@@ -186,6 +185,7 @@ export default function Home() {
       setError("We couldn't find that location.")
     }
   }
+  
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center px-4 py-12 overflow-hidden">

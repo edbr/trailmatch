@@ -17,23 +17,56 @@ type Trail = {
   mapUrl: string
 }
 
-export default function ResultsClient() {
+interface Props {
+  location?: string
+}
+
+export default function ResultsClient({ location }: Props) {
   const searchParams = useSearchParams()
-  const lat = searchParams.get("lat")
-  const lon = searchParams.get("lon")
+  const latParam = searchParams.get("lat")
+  const lonParam = searchParams.get("lon")
 
   const [trails, setTrails] = useState<Trail[]>([])
   const [loading, setLoading] = useState(true)
   const [bgImage, setBgImage] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!lat || !lon) return
+    if (!latParam || !lonParam) {
+      console.warn("❗ Missing lat/lon, skipping API fetch")
+      setLoading(false)
+      return
+    }
+
+    const lat = latParam
+    const lon = lonParam
 
     const fetchTrails = async () => {
-      const res = await fetch(`/api/trails?lat=${lat}&lon=${lon}`)
-      const data = await res.json()
-      setTrails(data)
-      setLoading(false)
+      try {
+        console.log("📡 Fetching trails for:", { lat, lon })
+        const res = await fetch(`/api/trails?lat=${lat}&lon=${lon}`)
+
+        if (!res.ok) {
+          const errorText = await res.text()
+          console.error("❌ Trail API request failed:", res.status, errorText)
+          setLoading(false)
+          return
+        }
+
+        const data = await res.json()
+        if (!Array.isArray(data)) {
+          console.error("⚠️ API returned unexpected format:", data)
+          setTrails([])
+          setLoading(false)
+          return
+        }
+
+        console.log("✅ Trails fetched:", data)
+        setTrails(data)
+      } catch (err) {
+        console.error("🚨 Error fetching trails:", err)
+      } finally {
+        setLoading(false)
+      }
     }
 
     fetchTrails()
@@ -42,12 +75,14 @@ export default function ResultsClient() {
     if (storedBg) {
       setBgImage(storedBg)
     }
-  }, [lat, lon])
+  }, [latParam, lonParam, location])
 
-  if (!lat || !lon) {
+  const hasCoords = latParam && lonParam
+
+  if (!hasCoords && !location) {
     return (
       <main className="p-6 max-w-3xl mx-auto text-center">
-        <p className="text-muted-foreground">Missing coordinates.</p>
+        <p className="text-muted-foreground">Missing location data.</p>
         <Link href="/">
           <Button className="mt-4">← Back to Search</Button>
         </Link>
@@ -66,7 +101,6 @@ export default function ResultsClient() {
       transition={{ duration: 0.6 }}
       className="relative min-h-screen px-6 py-12 overflow-x-hidden overflow-y-auto"
     >
-      {/* Fixed background */}
       <AnimatePresence>
         {bgImage && (
           <motion.div
@@ -81,10 +115,8 @@ export default function ResultsClient() {
         )}
       </AnimatePresence>
 
-      {/* Overlay */}
       <div className="fixed inset-0 bg-black/30 z-0 pointer-events-none" />
 
-      {/* Foreground content */}
       <div className="relative z-10 max-w-3xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-white drop-shadow">Nearby Trails</h1>

@@ -1,30 +1,26 @@
-// src/app/sitemap.xml/route.ts
 import { NextResponse } from "next/server"
 
 export async function GET() {
-  const baseUrl = "https://matchtrail.com"
+  const domain = "https://matchtrail.com"
+  const staticRoutes = ["", "/about", "/results"]
+  const dynamicLocations = ["tahoe", "los-angeles", "bend", "moab", "boulder"] // example slugs
 
-  const pages = [
-    "",            // homepage
-    "/results",    // you can later dynamically list locations here
+  const urls = [
+    ...staticRoutes.map((path) => `${domain}${path}`),
+    ...dynamicLocations.map((slug) => `${domain}/results/${slug}`),
   ]
 
-  const urls = pages.map((path) => {
-    return `
-  <url>
-    <loc>${baseUrl}${path}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>${path === "" ? "1.0" : "0.8"}</priority>
-  </url>
-    `.trim()
-  }).join("\n")
-
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset 
-  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
->
-${urls}
-</urlset>`.trim()
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  ${urls
+    .map(
+      (url) => `<url>
+    <loc>${url}</loc>
+    <changefreq>daily</changefreq>
+  </url>`
+    )
+    .join("\n")}
+</urlset>`
 
   return new NextResponse(xml, {
     headers: {
