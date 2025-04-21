@@ -252,6 +252,18 @@ export default function Home() {
             </CardContent>
           </form>
         </Card>
+
+        <p className="mt-4 text-center text-sm text-white/70"> Made with ❤️ by{" "}
+  <a
+    href="https://edbelluti.com"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="underline hover:text-white"
+  >
+    Eduardo Belluti
+  </a>
+</p>
+
       </motion.div>
     </main>
   )
