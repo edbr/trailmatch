@@ -217,21 +217,21 @@ export default function Home() {
         transition={{ duration: 0.6 }}
         className="relative z-10 w-full max-w-md"
       >
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>🎒 TrailMatch</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Find trails near your location or search by place.
+        <Card className="w-full backdrop-blur-md bg-white/80 border border-white/20 shadow-lg rounded-2xl">
+        <CardHeader>
+            <CardTitle>🎒 Trail Match</CardTitle>
+            <p className="text-sm">
+            Find trailheads near you
             </p>
           </CardHeader>
 
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               <Label htmlFor="location">Location</Label>
-              <Input
+              <Input   className="rounded-lg border border-white/60 bg-white/90 text-black placeholder-gray-500 shadow-md focus:ring-2 focus:ring-green-600 focus:border-green-600 transition"
                 id="location"
                 name="location"
-                placeholder="Enter city or point of interest"
+                placeholder="Enter a trailhead, park, or town"
                 value={typedLocation}
                 onChange={(e) => setTypedLocation(e.target.value)}
                 ref={inputRef}
@@ -239,15 +239,15 @@ export default function Home() {
 
               {error && <p className="text-sm text-red-500">{error}</p>}
 
-              <Button type="submit" className="w-full">
+              <Button className="w-full bg-green-600 hover:bg-green-700 text-white rounded-lg">
                 Find Trails
               </Button>
 
               <div className="flex flex-wrap gap-2 justify-center mt-4 text-sm text-muted-foreground">
-                <Button variant="outline" size="sm">🏔️ Mountain</Button>
-                <Button variant="outline" size="sm">🌊 Lake</Button>
-                <Button variant="outline" size="sm">🌲 Forest</Button>
-                <Button variant="outline" size="sm">🎯 Random</Button>
+                <Button variant="outline" size="sm" className="hover:scale-105 transition-transform">🏔️ Mountain Vibes</Button>
+                <Button variant="outline" size="sm" className="hover:scale-105 transition-transform">🌊 Lake</Button>
+                <Button variant="outline" size="sm" className="hover:scale-105 transition-transform">🌲 Into the Forest</Button>
+                <Button variant="outline" size="sm" className="hover:scale-105 transition-transform">🎯 Surprise me</Button>
               </div>
             </CardContent>
           </form>
