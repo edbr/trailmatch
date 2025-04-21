@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { AnimatePresence, motion } from "framer-motion"
+import OutdoorNews from "@/app/_components/OutdoorNews"
 
 export const dynamic = "force-dynamic"
 
@@ -252,17 +253,18 @@ export default function Home() {
             </CardContent>
           </form>
         </Card>
+        <OutdoorNews />
 
         <p className="mt-4 text-center text-sm text-white/70"> Made with ❤️ by{" "}
-  <a
-    href="https://edbelluti.com"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="underline hover:text-white"
-  >
-    Eduardo Belluti
-  </a>
-</p>
+        <a
+          href="https://edbelluti.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-white"
+        >
+          Eduardo Belluti
+        </a>
+      </p>
 
       </motion.div>
     </main>
