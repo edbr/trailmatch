@@ -228,7 +228,7 @@ export default function Home() {
 
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location">Add your location:</Label>
               <Input   className="rounded-lg border border-white/60 bg-white/90 text-black placeholder-gray-500 shadow-md focus:ring-2 focus:ring-green-600 focus:border-green-600 transition"
                 id="location"
                 name="location"
@@ -243,7 +243,8 @@ export default function Home() {
               <Button className="w-full bg-green-600 hover:bg-green-700 text-white rounded-lg">
                 Find Trails
               </Button>
-
+              <br></br>
+              <Label htmlFor="location">Choose by vibe:</Label>
               <div className="flex flex-wrap gap-2 justify-center mt-4 text-sm text-muted-foreground">
                 <Button variant="outline" size="sm" className="hover:scale-105 transition-transform">🏔️ Mountain Vibes</Button>
                 <Button variant="outline" size="sm" className="hover:scale-105 transition-transform">🌊 Lake</Button>
