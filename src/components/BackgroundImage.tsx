@@ -6,12 +6,6 @@ interface BackgroundImageProps {
   src: string | null
 }
 
-/**
- * Absolutely flicker-free background image component.
- * - Preloads next image fully before swapping.
- * - Only one DOM node is ever rendered.
- * - Single fade-in handled after decode().
- */
 export default function BackgroundImage({ src }: BackgroundImageProps) {
   const [bgStyle, setBgStyle] = useState<React.CSSProperties>({
     opacity: 0,
@@ -26,24 +20,27 @@ export default function BackgroundImage({ src }: BackgroundImageProps) {
 
     const img = new Image()
     img.src = src
-    img.decode
-      ? img.decode().then(() => swapBackground(src))
-      : (img.onload = () => swapBackground(src))
 
-    function swapBackground(url: string) {
+    const handleLoad = () => {
       // swap instantly, then fade in
       setBgStyle((prev) => ({
         ...prev,
-        backgroundImage: `url(${url})`,
+        backgroundImage: `url(${src})`,
         opacity: 0, // reset fade
       }))
-
       requestAnimationFrame(() =>
         setBgStyle((prev) => ({
           ...prev,
           opacity: 1,
         }))
       )
+    }
+
+    // decode() isn’t always available (Safari)
+    if ("decode" in img && typeof img.decode === "function") {
+      img.decode().then(handleLoad).catch(() => handleLoad())
+    } else {
+      img.onload = handleLoad
     }
   }, [src])
 
@@ -52,7 +49,6 @@ export default function BackgroundImage({ src }: BackgroundImageProps) {
       className="absolute inset-0 w-full h-full bg-black/30 overflow-hidden"
       style={bgStyle}
     >
-      {/* Grain overlay */}
       <div className="absolute inset-0 pointer-events-none mix-blend-soft-light opacity-15 bg-[url('/noise.png')] bg-repeat" />
     </div>
   )

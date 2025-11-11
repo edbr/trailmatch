@@ -36,11 +36,16 @@ const heroImages = [
 export function useS3HeroImage(setBgImage: (url: string) => void) {
   const fetchS3Image = useCallback(async () => {
     try {
-      const randomImage = heroImages[Math.floor(Math.random() * heroImages.length)]
+      const randomImage =
+        heroImages[Math.floor(Math.random() * heroImages.length)]
       await preloadImage(randomImage)
       setBgImage(randomImage)
-    } catch (err: any) {
-      console.error("S3 hero image fetch error:", err?.message || err)
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("S3 hero image fetch error:", err.message)
+      } else {
+        console.error("S3 hero image fetch error:", err)
+      }
     }
   }, [setBgImage])
 

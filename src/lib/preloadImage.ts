@@ -1,10 +1,8 @@
-// src/lib/preloadImage.ts
-export function preloadImage(url: string): Promise<string> {
-  return new Promise((resolve, reject) => {
+export async function preloadImage(src: string): Promise<void> {
+  return new Promise((resolve) => {
     const img = new Image()
-    img.onload = () => resolve(url)
-    img.onerror = (err) => reject(new Error(`Failed to load image: ${url}`))
-    img.crossOrigin = "anonymous"
-    img.src = url
+    img.src = src
+    img.onload = () => resolve()
+    img.onerror = () => resolve()
   })
 }
