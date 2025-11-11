@@ -4,9 +4,10 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import TrailSearchCard from "@/components/TrailSearchCard"
 import OutdoorNews from "@/components/OutdoorNews"
-import Footer from "@/components/Footer"
+import { Footer } from "@/components/Footer"
 import Header from "@/components/Header"
 import BackgroundImage from "@/components/BackgroundImage"
+import { MostVisitedTrailheads } from "@/components/MostVisitedTrailheads"
 
 import { useS3HeroImage } from "@/hooks/useS3HeroImage"
 import { useUnsplashImage } from "@/hooks/useUnsplashImage"
@@ -104,7 +105,7 @@ export default function Home() {
           />
         </div>
       </section>
-
+      <MostVisitedTrailheads />
       {/* Rest of page */}
       <OutdoorNews />
       <Footer />

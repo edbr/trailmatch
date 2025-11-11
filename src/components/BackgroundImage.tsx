@@ -46,7 +46,7 @@ export default function BackgroundImage({ src }: BackgroundImageProps) {
 
   return (
     <div
-      className="absolute inset-0 w-full h-full bg-black/30 overflow-hidden"
+      className="absolute inset-0 w-full h-full bg-black/40 overflow-hidden"
       style={bgStyle}
     >
       <div className="absolute inset-0 pointer-events-none mix-blend-soft-light opacity-15 bg-[url('/noise.png')] bg-repeat" />
