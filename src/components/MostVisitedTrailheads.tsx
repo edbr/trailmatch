@@ -86,15 +86,28 @@ export function MostVisitedTrailheads() {
                     />
                 </div>
 
-                <CardContent className="p-4 pt-3">
-                    <h3 className="font-semibold text-lg">{trail.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-3">{trail.vicinity}</p>
-                    <div className="flex flex-wrap gap-2">
-                    <span className="inline-block bg-secondary text-secondary-foreground text-xs font-medium rounded-full px-3 py-1">
-                        Get Directions →
-                    </span>
-                    </div>
-                </CardContent>
+               <CardContent className="p-4 pt-3">
+                        <h3 className="font-semibold text-lg">{trail.name}</h3>
+                        <p className="mb-3 text-sm text-muted-foreground">{trail.vicinity}</p>
+
+                        <div className="flex flex-wrap gap-2">
+                            <span
+                            className="
+                                inline-block
+                                rounded-full
+                                px-3 py-1
+                                text-xs font-medium
+                                text-[hsl(var(--support))]
+                                bg-[hsl(var(--accent))]
+                                transition-colors
+                                hover:bg-[hsl(var(--secondary))]
+                                hover:text-[hsl(var(--background))]
+                            "
+                            >
+                            Get&nbsp;Directions&nbsp;→
+                            </span>
+                        </div>
+                        </CardContent>
                 </Card>
               </motion.a>
             )

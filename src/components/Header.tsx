@@ -2,20 +2,25 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
+
 
 export default function Header() {
   return (
     <header
       className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between 
-                 px-8 py-4 bg-gradient-to-b from-black/40 to-transparent backdrop-blur-md border-b border-white/10"
+                 px-36 py-4 bg-gradient-to-b from-black/60 to-black/10 backdrop-blur-md border-b"
     >
       <div className="flex items-center gap-8">
         {/* Logo */}
-        <Link
-          href="/"
-          className="flex items-center gap-2 font-semibold text-white text-lg tracking-wide hover:text-green-300 transition-colors"
-        >
-          🥾 <span>TrailMatch</span>
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/logoWhite.svg"
+            alt="TrailMatch logo"
+            width={136}
+            height={136}
+            priority
+          />
         </Link>
 
         {/* Nav */}

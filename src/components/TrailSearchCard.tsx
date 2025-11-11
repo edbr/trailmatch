@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
+import Link from "next/link"
+import Image from "next/image"
 
 interface TrailSearchCardProps {
   typedLocation: string
@@ -33,21 +35,25 @@ export default function TrailSearchCard({
         className="
           w-full max-w-5xl
           backdrop-blur-md
-          bg-card/90
+          bg-[hsl(var(--background))]
           border border-border
           shadow-xl
           rounded-xl
           transition
-          dark:(bg-card/70 border-border/50)
+          dark:(bg-[hsl(var(--support))]/90 border-border/60)
         "
       >
         <CardHeader className="text-center pb-2">
-          <CardTitle className="text-3xl font-semibold text-foreground">
-            Trail Match
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Find trailheads near you
-          </p>
+           <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/logo.svg"
+            alt="TrailMatch logo"
+            width={236}
+            height={236}
+            priority
+          />
+        </Link>
+
         </CardHeader>
 
         <form onSubmit={handleSubmit}>
@@ -62,11 +68,12 @@ export default function TrailSearchCard({
               ref={inputRef}
               value={typedLocation}
               onChange={(e) => setTypedLocation(e.target.value)}
-              placeholder="Enter a trailhead, park, or town"
+              placeholder="Enter a city, town, village ..."
               className="
-                h-12 rounded-md border border-input bg-input/70 text-foreground placeholder:text-muted-foreground
-                focus:ring-2 focus:ring-ring focus:border-ring transition
-                dark:(bg-input/30 border-border)
+                h-12 rounded-md border border-input bg-[hsl(var(--background))] text-foreground placeholder:text-muted-foreground
+                focus:ring-2 focus:ring-[hsl(var(--secondary))] focus:border-[hsl(var(--secondary))]
+                transition
+                dark:(bg-[hsl(var(--support))] border-border)
               "
             />
 
@@ -74,8 +81,13 @@ export default function TrailSearchCard({
 
             <Button
               className="
-                w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md py-5 text-base transition
-                dark:(bg-primary/80 hover:bg-primary)
+                w-full
+                py-5 text-base font-medium rounded-md transition
+                bg-[hsl(var(--accent))]
+                text-[hsl(var(--support))]
+                hover:bg-[hsl(var(--secondary))]
+                hover:text-[hsl(var(--background))]
+                shadow-[0_0_20px_rgba(215,255,0,0.3)]
               "
             >
               Find Trails
@@ -85,24 +97,28 @@ export default function TrailSearchCard({
               Choose by vibe:
             </Label>
 
-            <div className="flex flex-wrap gap-3 justify-center mt-4 text-sm text-muted-foreground">
-              {["🏔️ Mountain Vibes", "🌊 Lake", "🌲 Into the Forest", "🎯 Surprise me"].map(
-                (label) => (
-                  <Button
-                    key={label}
-                    variant="outline"
-                    size="sm"
-                    className="
-                      border border-border hover:scale-105 transition-transform
-                      bg-accent/50 hover:bg-accent
-                      text-accent-foreground
-                      rounded-full px-5 py-2
-                    "
-                  >
-                    {label}
-                  </Button>
-                )
-              )}
+            <div className="flex flex-wrap justify-center mt-4 gap-3 text-sm text-muted-foreground">
+              {[
+                "🏔️ Mountain Vibes",
+                "🌊 Lake",
+                "🌲 Into the Forest",
+                "🎯 Surprise me",
+              ].map((label) => (
+                <Button
+                  key={label}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="
+                    rounded-full px-5 py-2 border border-border transition-transform duration-200
+                    bg-[hsl(var(--background))]
+                    text-[hsl(var(--secondary))]
+                    hover:scale-105 hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--support))]
+                  "
+                >
+                  {label}
+                </Button>
+              ))}
             </div>
           </CardContent>
         </form>

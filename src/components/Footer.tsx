@@ -7,92 +7,109 @@ export function Footer() {
   return (
     <footer className="mt-24 w-full border-t border-border bg-card text-card-foreground">
       {/* Main content grid */}
-      <div className="max-w-6xl mx-auto px-6 sm:px-8 md:px-12 py-16 md:py-20 grid grid-cols-1 md:grid-cols-[auto_auto_auto_1fr] gap-10 md:gap-20 text-sm">
-        {/* Left: logo / identity */}
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-6 py-16 text-sm sm:px-8 md:grid-cols-[auto_auto_auto_1fr] md:gap-20 md:py-20">
+        {/* Logo + tagline */}
         <div className="flex flex-col items-start">
           <Image
             src="/logo.svg"
             alt="TrailMatch logo"
             width={140}
             height={140}
-            className="object-contain mb-4"
+            className="mb-4 object-contain"
           />
-          <p className="text-muted-foreground text-sm max-w-xs">
+          <p className="max-w-xs text-sm text-muted-foreground">
             Discover your next trail — curated by nature, powered by AI.
           </p>
         </div>
 
-        {/* Works / Explore links */}
-        <div className="flex flex-col space-y-2">
-          <h4 className="text-base font-semibold mb-3 text-foreground">Explore</h4>
-          {["Top Trails", "Nearby", "Vibes", "Regions", "Articles"].map((label) => (
-            <Link
-              key={label}
-              href="#"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
+        {/* Explore links */}
+        <nav
+          aria-label="Explore links"
+          className="flex flex-col space-y-2 text-muted-foreground"
+        >
+          <h4 className="mb-3 text-base font-semibold text-foreground">
+            Explore
+          </h4>
+          {["Top Trails", "Nearby", "Vibes", "Regions", "Articles"].map(
+            (label) => (
+              <Link
+                key={label}
+                href="#"
+                className="text-sm transition-colors hover:text-foreground"
+              >
+                {label}
+              </Link>
+            ),
+          )}
+        </nav>
 
-        {/* About / Support links */}
-        <div className="flex flex-col space-y-2">
-          <h4 className="text-base font-semibold mb-3 text-foreground">About</h4>
-          {["Our Story", "Press", "Contact", "Privacy", "Terms"].map((label) => (
-            <Link
-              key={label}
-              href="#"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
+        {/* About links */}
+        <nav
+          aria-label="About links"
+          className="flex flex-col space-y-2 text-muted-foreground"
+        >
+          <h4 className="mb-3 text-base font-semibold text-foreground">
+            About
+          </h4>
+          {["Our Story", "Press", "Contact", "Privacy", "Terms"].map(
+            (label) => (
+              <Link
+                key={label}
+                href="#"
+                className="text-sm transition-colors hover:text-foreground"
+              >
+                {label}
+              </Link>
+            ),
+          )}
+        </nav>
 
-        {/* Spacer (aligns grid on desktop) */}
-        <div></div>
+        {/* Spacer for grid alignment */}
+        <div />
       </div>
 
-{/* Bottom bar */}
-<div className="border-t border-border/50 py-6 px-6 sm:px-8 flex flex-col md:flex-row items-center justify-between text-xs text-muted-foreground">
-  <p className="mb-3 md:mb-0">
-    © {new Date().getFullYear()} TrailMatch — Designed by{" "}
-    <Link
-      href="https://edbelluti.com"
-      target="_blank"
-      className="font-medium hover:text-foreground transition-colors"
-    >
-      Eduardo Belluti
-    </Link>
-    .
-  </p>
+      {/* Bottom bar */}
+      <div className="flex flex-col items-center justify-between border-t border-border/50 px-6 py-6 text-xs text-muted-foreground sm:px-8 md:flex-row">
+        <p className="mb-3 text-center md:mb-0 md:text-left">
+          © {new Date().getFullYear()} TrailMatch — Designed by{" "}
+          <Link
+            href="https://edbelluti.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium transition-colors hover:text-foreground"
+          >
+            Eduardo Belluti
+          </Link>
+          .
+        </p>
 
-  <div className="flex gap-6 uppercase tracking-wide">
-    <Link
-      href="https://linkedin.com/in/edbelluti"
-      target="_blank"
-      className="hover:text-foreground transition-colors"
-    >
-      LinkedIn
-    </Link>
-    <Link
-      href="https://edbelluti.com"
-      target="_blank"
-      className="hover:text-foreground transition-colors"
-    >
-      Website
-    </Link>
-    <Link
-      href="https://github.com/edbr"
-      target="_blank"
-      className="hover:text-foreground transition-colors"
-    >
-      GitHub
-    </Link>
-  </div>
-</div>
-
+        <div className="flex gap-6 uppercase tracking-wide">
+          <Link
+            href="https://linkedin.com/in/edbelluti"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-foreground"
+          >
+            LinkedIn
+          </Link>
+          <Link
+            href="https://edbelluti.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-foreground"
+          >
+            Website
+          </Link>
+          <Link
+            href="https://github.com/edbr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-foreground"
+          >
+            GitHub
+          </Link>
+        </div>
+      </div>
     </footer>
   )
 }
