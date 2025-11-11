@@ -8,7 +8,13 @@ import { Card, CardContent } from "@/components/ui/card"
 interface Trailhead {
   name: string
   vicinity: string
-  photoUrl?: string
+  photoUrl: string
+}
+
+interface GooglePlace {
+  name: string
+  formatted_address: string
+  photos?: { photo_reference: string }[]
 }
 
 export function MostVisitedTrailheads() {
@@ -23,7 +29,7 @@ export function MostVisitedTrailheads() {
         const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
 
         if (data?.results) {
-          const places = data.results.slice(0, 8).map((place: any) => ({
+          const places: Trailhead[] = data.results.slice(0, 8).map((place: GooglePlace) => ({
             name: place.name,
             vicinity: place.formatted_address,
             photoUrl: place.photos?.[0]
@@ -53,11 +59,11 @@ export function MostVisitedTrailheads() {
   return (
     <section className="w-full py-20 bg-background border-t border-border">
       <div className="max-w-6xl mx-auto px-6">
-        <h2 className="text-3xl md:text-4xl font-semibold mb-10 text-center">
+        <h2 className="mb-10 text-center text-3xl font-semibold md:text-4xl">
           Most Visited Trailheads Near You
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {trailheads.map((trail, i) => {
             const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
               trail.name
@@ -75,39 +81,41 @@ export function MostVisitedTrailheads() {
                 viewport={{ once: true }}
                 className="block"
               >
-              <Card className="flex flex-col h-full rounded-lg overflow-hidden border border-border hover:shadow-md transition-shadow duration-300 pt-0">
-                <div className="relative aspect-[4/3] w-full">
+                <Card className="flex h-full flex-col overflow-hidden rounded-lg border border-border pt-0 transition-shadow duration-300 hover:shadow-md">
+                  <div className="relative aspect-[4/3] w-full">
                     <Image
-                    src={trail.photoUrl!}
-                    alt={trail.name}
-                    width={800}
-                    height={600}
-                    className="w-full h-full object-cover"
+                      src={trail.photoUrl}
+                      alt={trail.name}
+                      width={800}
+                      height={600}
+                      className="h-full w-full object-cover"
                     />
-                </div>
+                  </div>
 
-               <CardContent className="p-4 pt-3">
-                        <h3 className="font-semibold text-lg">{trail.name}</h3>
-                        <p className="mb-3 text-sm text-muted-foreground">{trail.vicinity}</p>
+                  <CardContent className="p-4 pt-3">
+                    <h3 className="text-lg font-semibold">{trail.name}</h3>
+                    <p className="mb-3 text-sm text-muted-foreground">
+                      {trail.vicinity}
+                    </p>
 
-                        <div className="flex flex-wrap gap-2">
-                            <span
-                            className="
-                                inline-block
-                                rounded-full
-                                px-3 py-1
-                                text-xs font-medium
-                                text-[hsl(var(--support))]
-                                bg-[hsl(var(--accent))]
-                                transition-colors
-                                hover:bg-[hsl(var(--secondary))]
-                                hover:text-[hsl(var(--background))]
-                            "
-                            >
-                            Get&nbsp;Directions&nbsp;→
-                            </span>
-                        </div>
-                        </CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      <span
+                        className="
+                          inline-block
+                          rounded-full
+                          px-3 py-1
+                          text-xs font-medium
+                          text-[hsl(var(--support))]
+                          bg-[hsl(var(--accent))]
+                          transition-colors
+                          hover:bg-[hsl(var(--secondary))]
+                          hover:text-[hsl(var(--background))]
+                        "
+                      >
+                        Get&nbsp;Directions&nbsp;→
+                      </span>
+                    </div>
+                  </CardContent>
                 </Card>
               </motion.a>
             )
