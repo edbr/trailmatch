@@ -30,18 +30,7 @@ export default function ResultsSearchBar({
   const router = useRouter()
   const [lat, setLat] = useState("")
   const [lon, setLon] = useState("")
-  const [scriptLoaded, setScriptLoaded] = useState(false)
 
-  // ✅ Wait for Google script
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (window.google?.maps?.places) {
-        setScriptLoaded(true)
-        clearInterval(interval)
-      }
-    }, 500)
-    return () => clearInterval(interval)
-  }, [])
 
   // ✅ Initialize autocomplete
   useGooglePlacesAutocomplete( inputRef!, setLat, setLon, setLocation, setLocation, () => {})

@@ -1,16 +1,16 @@
 "use client"
 
-import { useEffect, useState, useRef, FormEvent } from "react"
+import { useEffect, useState, useRef, FormEvent, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
+import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
 import Header from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import ResultsSearchBar from "@/components/ResultsSearchBar"
 import { Card, CardContent } from "@/components/ui/card"
-import Image from "next/image"
 
 type Trail = {
   id: string
@@ -39,31 +39,38 @@ export default function ResultsClient({ location }: Props) {
   const [typedLocation, setTypedLocation] = useState(location || "")
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Fetch trail data
-  const fetchTrails = async (lat: string, lon: string) => {
-    try {
-      setLoading(true)
-      const res = await fetch(`/api/trails?lat=${lat}&lon=${lon}&radius=${distance}`)
-      const data = await res.json()
-      setTrails(Array.isArray(data) ? data : [])
-    } catch (err) {
-      console.error("Trail fetch error:", err)
-      setTrails([])
-    } finally {
-      setLoading(false)
-    }
-  }
+  // ✅ Memoized fetch function (no lint warnings)
+  const fetchTrails = useCallback(
+    async (lat: string, lon: string) => {
+      try {
+        setLoading(true)
+        const res = await fetch(`/api/trails?lat=${lat}&lon=${lon}&radius=${distance}`)
+        const data = await res.json()
+        setTrails(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error("Trail fetch error:", err)
+        setTrails([])
+      } finally {
+        setLoading(false)
+      }
+    },
+    [distance] // depend only on what's used inside
+  )
 
+  // ✅ Safe effect with proper dependencies
   useEffect(() => {
-    if (latParam && lonParam) fetchTrails(latParam, lonParam)
+    if (latParam && lonParam) {
+      void fetchTrails(latParam, lonParam)
+    }
+
     const storedBg = localStorage.getItem("bgImage")
     if (storedBg) setBgImage(storedBg)
-  }, [latParam, lonParam])
+  }, [latParam, lonParam, fetchTrails])
 
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     console.log("Search:", typedLocation, distance)
-    // Future: trigger a new geocode → fetchTrails(newLat, newLon)
+    // TODO: trigger geocode → fetchTrails(newLat, newLon)
   }
 
   return (

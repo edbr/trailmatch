@@ -38,7 +38,7 @@ export function MostVisitedTrailheads({
         const data = await res.json()
 
         if (data?.results) {
-          const places: Trail[] = data.results.slice(0, 8).map((p: any) => ({
+          const places: Trail[] = data.results.slice(0, 8).map((p: { place_id: string; name: string; vicinity?: string; photos?: { photo_reference: string }[] }) => ({
             id: p.place_id,
             name: p.name,
             location: p.vicinity || "Unknown",
