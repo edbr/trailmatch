@@ -1,83 +1,119 @@
 import { NextResponse } from "next/server"
 
+interface GooglePlace {
+  place_id: string
+  name: string
+  vicinity: string
+  geometry: { location: { lat: number; lng: number } }
+  rating?: number
+  photos?: { photo_reference: string }[]
+}
+
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const lat = searchParams.get("lat")
-  const lon = searchParams.get("lon")
-  const radius = searchParams.get("radius") || "20000"
-  const keyword = searchParams.get("keyword") || "trail"
+  try {
+    const { searchParams } = new URL(req.url)
+    const lat = searchParams.get("lat")
+    const lon = searchParams.get("lon")
+    const miles = Number(searchParams.get("radius")) || 25
+    const radius = miles * 1609 // convert miles → meters
 
-  if (!lat || !lon) {
-    return NextResponse.json({ error: "Missing lat/lon" }, { status: 400 })
-  }
+    if (!lat || !lon) {
+      return NextResponse.json({ error: "Missing lat/lon" }, { status: 400 })
+    }
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY
-  const endpoint = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lon}&radius=${radius}&keyword=${keyword}&key=${apiKey}`
+    const apiKey = process.env.GOOGLE_PLACES_SERVER_KEY
+    if (!apiKey) throw new Error("Missing GOOGLE_PLACES_SERVER_KEY")
 
-  const res = await fetch(endpoint)
-  const data = await res.json()
+    // 1️⃣ Multiple search passes to capture more trailheads
+    const searchCombos = [
+      { keyword: "trailhead", type: "point_of_interest" },
+      { keyword: "hiking trail", type: "point_of_interest" },
+      { keyword: "nature trail", type: "point_of_interest" },
+      { keyword: "park", type: "park" },
+      { keyword: "preserve", type: "point_of_interest" },
+    ]
 
-  console.log("Google Places API raw response:", JSON.stringify(data, null, 2)) // 🔍 Log full result
+    let results: GooglePlace[] = []
+    for (const combo of searchCombos) {
+      const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lon}&radius=${radius}&keyword=${encodeURIComponent(
+        combo.keyword
+      )}&type=${combo.type}&key=${apiKey}`
 
-  if (!data.results || !Array.isArray(data.results)) {
-    return NextResponse.json({ error: "Unexpected API response" }, { status: 500 })
-  }
+      const res = await fetch(url)
+      const data = await res.json()
 
-  type GooglePlace = {
-    place_id: string
-    name: string
-    vicinity: string
-    geometry: {
-      location: {
-        lat: number
-        lng: number
+      console.log(`🔍 ${combo.keyword}: ${data.results?.length || 0} (${data.status})`)
+      if (data.status === "OK" && data.results) {
+        results.push(...data.results)
       }
     }
-    rating?: number
-  }
 
-  function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const toRad = (x: number) => (x * Math.PI) / 180
-  
-    const R = 6371 // km
-    const dLat = toRad(lat2 - lat1)
-    const dLon = toRad(lon2 - lon1)
-  
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2)
-  
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-    return R * c // distance in km
-  }
-  
-  
-  const trails = (data.results as GooglePlace[])
-  .map((place) => {
+    // 2️⃣ Deduplicate by place_id
+    results = Array.from(new Map(results.map((p) => [p.place_id, p])).values())
+
+    // 3️⃣ Filter to only trail-related names (remove stores, etc.)
+    results = results.filter(
+      (p) =>
+        /(trail|trailhead|path|nature|park|preserve)/i.test(p.name) &&
+        !/(hotel|store|gas|restaurant|school|church|office|real estate|golf|parking)/i.test(p.name)
+    )
+
+    if (results.length === 0) {
+      console.warn("⚠️ No trail-like results found.")
+      return NextResponse.json({ error: "ZERO_RESULTS" }, { status: 404 })
+    }
+
+    // 4️⃣ Convert to your frontend format
+    const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+      const R = 6371
+      const toRad = (x: number) => (x * Math.PI) / 180
+      const dLat = toRad(lat2 - lat1)
+      const dLon = toRad(lon2 - lon1)
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) *
+          Math.cos(toRad(lat2)) *
+          Math.sin(dLon / 2) ** 2
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    }
+
+const trails = results
+  .filter(
+    (place: any) =>
+      !/(hotel|store|gas|restaurant|school|church|office|real estate)/i.test(place.name)
+  )
+  .map((place: any) => {
     const latNum = place.geometry.location.lat
     const lonNum = place.geometry.location.lng
-
-    // Mock difficulty and elevation values
     const difficulties = ["Easy", "Moderate", "Hard"]
-    const randomDifficulty = difficulties[Math.floor(Math.random() * difficulties.length)]
-    const elevation = Math.floor(300 + Math.random() * 1200) // 300–1500 ft
+    const randomDifficulty =
+      difficulties[Math.floor(Math.random() * difficulties.length)]
+    const elevation = Math.floor(300 + Math.random() * 1200)
 
     return {
       id: place.place_id,
       name: place.name,
-      location: place.vicinity || "Unknown location",
+      location: place.vicinity || "Unknown",
       lat: latNum,
       lon: lonNum,
-      rating: place.rating,
-      distance: haversineDistance(Number(lat), Number(lon), latNum, lonNum),
-      mapUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`, elevation,
+      rating: place.rating || 0,
+      distance: haversine(Number(lat), Number(lon), latNum, lonNum),
+      elevation,
       difficulty: randomDifficulty,
+      mapUrl: `https://www.google.com/maps/place/?q=place_id:${place.place_id}`,
+      // ✅ just store the photo_reference here
+      photoUrl: place.photos?.[0]
+  ? `/api/place-photo?ref=${place.photos[0].photo_reference}&maxwidth=800`
+  : "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800",
+
     }
   })
   .sort((a, b) => a.distance - b.distance)
 
-  
+return NextResponse.json(trails)
 
-  return NextResponse.json(trails)
+  } catch (error) {
+    console.error("🚨 Error fetching trails:", error)
+    return NextResponse.json({ error: "Failed to fetch trails" }, { status: 500 })
+  }
 }

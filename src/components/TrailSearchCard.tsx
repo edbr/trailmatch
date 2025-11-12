@@ -15,6 +15,7 @@ interface TrailSearchCardProps {
   inputRef: RefObject<HTMLInputElement | null>
   error: string
   handleSubmit: (e: FormEvent<HTMLFormElement>) => void
+  loading?: boolean
 }
 
 export default function TrailSearchCard({
@@ -23,6 +24,7 @@ export default function TrailSearchCard({
   inputRef,
   error,
   handleSubmit,
+  loading = false, // ✅ include and set default
 }: TrailSearchCardProps) {
   return (
     <motion.section
@@ -31,32 +33,20 @@ export default function TrailSearchCard({
       transition={{ duration: 0.8, ease: "easeOut" }}
       className="relative flex flex-col items-center justify-center w-full px-4 mt-32 sm:mt-40 md:mt-48"
     >
-      <Card
-        className="
-          w-full max-w-5xl
-          backdrop-blur-md
-          bg-[hsl(var(--background))]
-          border border-border
-          shadow-xl
-          rounded-xl
-          transition
-          dark:(bg-[hsl(var(--support))]/90 border-border/60)
-        "
-      >
+      <Card className="w-full max-w-5xl backdrop-blur-md bg-[hsl(var(--background))] border border-border shadow-xl rounded-xl transition dark:(bg-[hsl(var(--support))]/90 border-border/60)">
         <CardHeader className="text-center pb-2">
-           <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/logo.svg"
-            alt="TrailMatch logo"
-            width={236}
-            height={236}
-            priority
-          />
-        </Link>
-
+          <Link href="/" className="flex items-center justify-center">
+            <Image
+              src="/logo.svg"
+              alt="TrailMatch logo"
+              width={236}
+              height={236}
+              priority
+            />
+          </Link>
         </CardHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} autoComplete="off" aria-busy={loading}>
           <CardContent className="space-y-6">
             <Label htmlFor="location" className="text-foreground">
               Add your location:
@@ -68,29 +58,31 @@ export default function TrailSearchCard({
               ref={inputRef}
               value={typedLocation}
               onChange={(e) => setTypedLocation(e.target.value)}
-              placeholder="Enter a city, town, village ..."
+              placeholder="Enter a city, town, or park..."
               className="
-                h-12 rounded-md border border-input bg-[hsl(var(--background))] text-foreground placeholder:text-muted-foreground
+                h-12 rounded-md border border-input bg-[hsl(var(--background))]
+                text-foreground placeholder:text-muted-foreground
                 focus:ring-2 focus:ring-[hsl(var(--secondary))] focus:border-[hsl(var(--secondary))]
-                transition
-                dark:(bg-[hsl(var(--support))] border-border)
+                transition dark:(bg-[hsl(var(--support))] border-border)
               "
             />
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
             <Button
+              type="submit"
+              disabled={loading}
               className="
-                w-full
-                py-5 text-base font-medium rounded-md transition
+                w-full py-5 text-base font-medium rounded-md transition
                 bg-[hsl(var(--accent))]
                 text-[hsl(var(--support))]
                 hover:bg-[hsl(var(--secondary))]
                 hover:text-[hsl(var(--background))]
                 shadow-[0_0_20px_rgba(215,255,0,0.3)]
+                disabled:opacity-60 disabled:cursor-not-allowed
               "
             >
-              Find Trails
+              {loading ? "Finding trails..." : "Find Trails"}
             </Button>
 
             <Label htmlFor="vibe" className="block pt-2 text-foreground">
@@ -98,27 +90,24 @@ export default function TrailSearchCard({
             </Label>
 
             <div className="flex flex-wrap justify-center mt-4 gap-3 text-sm text-muted-foreground">
-              {[
-                "🏔️ Mountain Vibes",
-                "🌊 Lake",
-                "🌲 Into the Forest",
-                "🎯 Surprise me",
-              ].map((label) => (
-                <Button
-                  key={label}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="
-                    rounded-full px-5 py-2 border border-border transition-transform duration-200
-                    bg-[hsl(var(--background))]
-                    text-[hsl(var(--secondary))]
-                    hover:scale-105 hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--support))]
-                  "
-                >
-                  {label}
-                </Button>
-              ))}
+              {["🏔️ Mountain Vibes", "🌊 Lake", "🌲 Into the Forest", "🎯 Surprise me"].map(
+                (label) => (
+                  <Button
+                    key={label}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="
+                      rounded-full px-5 py-2 border border-border transition-transform duration-200
+                      bg-[hsl(var(--background))]
+                      text-[hsl(var(--secondary))]
+                      hover:scale-105 hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--support))]
+                    "
+                  >
+                    {label}
+                  </Button>
+                )
+              )}
             </div>
           </CardContent>
         </form>
