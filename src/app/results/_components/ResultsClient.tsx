@@ -148,7 +148,7 @@ export default function ResultsClient({ location }: Props) {
                 height={600}
                 onError={(e) => {
                   (e.target as HTMLImageElement).src =
-                    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800"
+                    "https://trailmatch.s3.us-east-2.amazonaws.com/ignacio-estevo-xAMfQn0tWoE-unsplash.jpg"
                 }}
                 className="h-full w-full object-cover"
               />
@@ -185,7 +185,6 @@ export default function ResultsClient({ location }: Props) {
     No trails found nearby.
   </p>
 )}
-
       </section>
       <Footer />
     </main>
