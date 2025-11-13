@@ -137,15 +137,20 @@ export default function ResultsClient({ location }: Props) {
                 <Card className="flex flex-col h-full overflow-hidden rounded-lg border border-border hover:shadow-lg transition-shadow duration-300 bg-[hsl(var(--background))]/95 pt-0">
                   <div className="relative aspect-[4/3] w-full">
                     <Image
-                      src={
-                        trail.photoUrl ||
-                        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800"
-                      }
-                      alt={trail.name}
-                      width={800}
-                      height={600}
-                      className="h-full w-full object-cover"
-                    />
+                    unoptimized // 👈 Add this line
+                    src={
+                      trail.photoUrl ||
+                      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800"
+                    }
+                    alt={trail.name}
+                    width={800}
+                    height={600}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "https://trailmatch.s3.us-east-2.amazonaws.com/ignacio-estevo-xAMfQn0tWoE-unsplash.jpg"
+                    }}
+                    className="h-full w-full object-cover"
+                  />
                   </div>
                   <CardContent className="p-4 ">
                     <h3 className="font-semibold text-lg">{trail.name}</h3>
