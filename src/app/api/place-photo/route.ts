@@ -1,44 +1,53 @@
 import { NextResponse } from "next/server"
 
+export const runtime = "edge" // ⚡️faster streaming and lower latency
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
     const ref = searchParams.get("ref")
     const maxwidth = searchParams.get("maxwidth") || "800"
-
-    // 🧠 IMPORTANT: use the SERVER key (not NEXT_PUBLIC)
     const apiKey = process.env.GOOGLE_PLACES_SERVER_KEY
 
     if (!ref || !apiKey) {
-      console.error("Missing photo reference or API key")
-      return NextResponse.json({ error: "Missing photo reference or API key" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Missing photo reference or API key" },
+        { status: 400 }
+      )
     }
 
-    // 1️⃣ Call the Place Photo endpoint
+    // 1️⃣ Build the Place Photo URL (Google will redirect)
     const googleUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxwidth}&photoreference=${ref}&key=${apiKey}`
 
-    // 2️⃣ Google returns a 302 redirect → follow it manually
-    const res = await fetch(googleUrl, { redirect: "manual" })
+    // 2️⃣ Request HEAD only — follow redirect manually
+    const headRes = await fetch(googleUrl, { method: "HEAD", redirect: "manual" })
+    const redirectUrl = headRes.headers.get("location")
 
-    if (res.status === 302) {
-      const redirectUrl = res.headers.get("location")
-      if (redirectUrl) {
-        const imageRes = await fetch(redirectUrl)
-        const contentType = imageRes.headers.get("content-type") || "image/jpeg"
-        const buffer = Buffer.from(await imageRes.arrayBuffer())
-
-        return new NextResponse(buffer, {
-          headers: {
-            "Content-Type": contentType,
-            "Cache-Control": "public, max-age=86400", // 1 day cache
-          },
-        })
-      }
+    if (!redirectUrl) {
+      return NextResponse.json(
+        { error: "Photo redirect URL missing" },
+        { status: 404 }
+      )
     }
 
-    // 3️⃣ Handle unexpected results
-    console.error("Google photo fetch failed:", res.status, res.statusText)
-    return NextResponse.json({ error: "Google photo fetch failed" }, { status: res.status })
+    // 3️⃣ Proxy directly without buffering (stream)
+    const imageRes = await fetch(redirectUrl, { cache: "force-cache" })
+    if (!imageRes.ok) {
+      return NextResponse.json(
+        { error: "Image fetch failed" },
+        { status: imageRes.status }
+      )
+    }
+
+    const contentType = imageRes.headers.get("content-type") || "image/jpeg"
+    const stream = imageRes.body
+
+    return new NextResponse(stream, {
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=86400",
+      },
+    })
   } catch (err) {
     console.error("❌ Failed to fetch photo:", err)
     return NextResponse.json({ error: "Failed to fetch photo" }, { status: 500 })
