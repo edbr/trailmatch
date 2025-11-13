@@ -31,7 +31,7 @@ export default function ResultsClient({ location }: Props) {
   const searchParams = useSearchParams()
   const latParam = searchParams.get("lat")
   const lonParam = searchParams.get("lon")
-
+  const [visibleCount, setVisibleCount] = useState(16)
   const [trails, setTrails] = useState<Trail[]>([])
   const [loading, setLoading] = useState(false)
   const [bgImage, setBgImage] = useState<string | null>(null)
@@ -116,62 +116,77 @@ export default function ResultsClient({ location }: Props) {
           </Link>
         </div>
 
-        {loading ? (
-          <p className="text-muted-foreground text-center py-10">
-            Loading trails near {typedLocation}...
-          </p>
-        ) : trails.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {trails.map((trail, i) => (
-              <motion.a
-                key={trail.id || `${trail.name}-${i}`}
-                href={trail.mapUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.5 }}
-                viewport={{ once: true }}
-                className="block"
-              >
-                <Card className="flex flex-col h-full overflow-hidden rounded-lg border border-border hover:shadow-lg transition-shadow duration-300 bg-[hsl(var(--background))]/95 pt-0">
-                  <div className="relative aspect-[4/3] w-full">
-                    <Image
-                    unoptimized // 👈 Add this line
-                    src={
-                      trail.photoUrl ||
-                      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800"
-                    }
-                    alt={trail.name}
-                    width={800}
-                    height={600}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "https://trailmatch.s3.us-east-2.amazonaws.com/ignacio-estevo-xAMfQn0tWoE-unsplash.jpg"
-                    }}
-                    className="h-full w-full object-cover"
-                  />
-                  </div>
-                  <CardContent className="p-4 ">
-                    <h3 className="font-semibold text-lg">{trail.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {trail.location || "Unknown location"}
-                    </p>
-                    <span className="inline-block rounded-full bg-[hsl(var(--accent))] text-[hsl(var(--support))] text-xs font-medium px-3 py-1 hover:bg-[hsl(var(--secondary))] hover:text-[hsl(var(--background))] transition-colors">
-                      Get&nbsp;Directions&nbsp;→
-                    </span>
-                  </CardContent>
-                </Card>
-              </motion.a>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-muted-foreground py-12">
-            No trails found nearby.
-          </p>
-        )}
-      </section>
+      {loading ? (
+        <p className="text-muted-foreground text-center py-10">
+          Loading trails near {typedLocation}...
+        </p>
+      ) : trails.length > 0 ? (
+  <>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {trails.slice(0, visibleCount).map((trail, i) => (
+        <motion.a
+          key={trail.id || `${trail.name}-${i}`}
+          href={trail.mapUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.05, duration: 0.5 }}
+          viewport={{ once: true }}
+          className="block"
+        >
+          <Card className="flex flex-col h-full overflow-hidden rounded-lg border border-border hover:shadow-lg transition-shadow duration-300 bg-[hsl(var(--background))]/95 pt-0">
+            <div className="relative aspect-[4/3] w-full">
+              <Image
+                unoptimized
+                src={
+                  trail.photoUrl ||
+                  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800"
+                }
+                alt={trail.name}
+                width={800}
+                height={600}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800"
+                }}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-lg">{trail.name}</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                {trail.location || "Unknown location"}
+              </p>
+              <span className="inline-block rounded-full bg-[hsl(var(--accent))] text-[hsl(var(--support))] text-xs font-medium px-3 py-1 hover:bg-[hsl(var(--secondary))] hover:text-[hsl(var(--background))] transition-colors">
+                Get&nbsp;Directions&nbsp;→
+              </span>
+            </CardContent>
+          </Card>
+        </motion.a>
+      ))}
+    </div>
 
+    {/* 👇 Load More Button */}
+    {visibleCount < trails.length && (
+      <div className="flex justify-center mt-10">
+        <Button
+          variant="outline"
+          onClick={() => setVisibleCount((prev) => prev + 8)}
+          className="px-6 py-3 text-base font-medium"
+        >
+          Load More Trails
+        </Button>
+      </div>
+    )}
+  </>
+) : (
+  <p className="text-center text-muted-foreground py-12">
+    No trails found nearby.
+  </p>
+)}
+
+      </section>
       <Footer />
     </main>
   )
